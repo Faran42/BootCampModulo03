@@ -1,0 +1,1 @@
+o arquivo nodemon.json tem instruções que fazem o node interpretar o comando import
