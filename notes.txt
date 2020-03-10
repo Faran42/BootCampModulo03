@@ -1,1 +1,222 @@
 o arquivo nodemon.json tem instruções que fazem o node interpretar o comando import
+yarn init -y no terminal para iniciar o projeto
+yarn add express para baixar o express e demais arquivos da pasta node_modules
+em src/app.js foi configurado o servidor express
+Adcionar (instalar) sucrase (import from) e nodemon como dependências -D
+criar o script dev: "nodemon src/server.js
+usando o import from, é preciso rodar a aplicação atraves do sucrase
+ex: yarn sucrase-node src/server.js
+criar o arquivo nodemon.json. Ver arquivo
+criar outro script, dev:debug "nodemon --inspect src/server.js
+abrir debug, trocar a request launch por attach
+remover a linha program, e adcionar "protocol": "inspector"
+adcionar depois de name "restart": true, para o debug restartar automaticamente
+
+Docker
+
+Imagem
+
+referente a um serviço disponível no docker, ou seja, um banco de dados por
+exemplo
+
+Container
+
+Container é a instancia da imagem, ou seja, podemos instanciar o banco de dados
+e um container
+Onde encontrar as imagens?
+Docker Registry (Docker Hub)
+Dockerfile possui instruções para criação de uma imagem docker.
+# partimos de uma imagem existente
+FROM node:10
+
+#Defiimos a pasta e copiamos os arquivos
+WORKDIR /usr/app
+COPY . ./
+
+# Instalamos as dependências
+RUN yarn
+
+# Qual porta queremos expor?
+EXPOSE 3333
+
+#Executamos nossa aplicação
+CMD yarn start
+
+sudo docker run --name fastfeet -e POSTGRES_PASSWORD=fastfeet -p 5432:5432 -d postgres
+
+para instanciar um container do banco de dados postgres
+
+baixar a gui postbir
+conectar usando os dados informados na criação do container postgres, no docker
+e conectar
+dentro do postbird, criar uma nova base de dados.
+docker ps (mostra os continers que estão rodando)
+docker start (nome do container) inicia o container
+docker stop (nome do container) finaliza o container
+
+Sequelize, um ORM para bancos de dados relacionais
+O Sequelize consegue interpretar comandos js para comandos SQL, dessa forma
+sendo capaz de manipupar o banco de dados,
+se utilizando apenas do javascript.
+
+Migrations, seria algo como um controle de versão para a base de dados
+atualizada entre todos os desenvolvedores do time e tambem entre desenvolvimento
+e produção
+
+Seeds - Servem para popular o banco de dados, apenas na fase de desenvolvimento.
+Próximo passo é instalar o esLint - Lintching?
+yarn eslint --init para inicializar um arquivo de configuração.
+1-To check syntax, find problems, and enforce code style
+2-JavaScript modules (import/export)
+3-React? Vue? None of these!
+4-No TypeScript
+5-Node
+6-Use a popular style guide
+7-Airbnb: https://github.com/airbnb/javascript
+8-JavaScript
+9-Y
+
+Sera criado um packge.lock.json
+Basta apagar ele e rodar um comando yarn que o yarn.lock vai atualizar todas as
+dependências do projeto.
+
+Instalar a extensão ES lint Dirk Baeumer
+
+No arquivo open Settings.json, adcionar as linhas a seguir:
+
+"[javascript]": {
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+    }
+},
+"[javascriptreact]": {
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+    }
+},
+
+A seguir, executar p seguinte comando:
+yarn add prettier eslint-config-prettier eslint-plugin-prettier -D
+
+no arquivo .eslintrc.js, em extends: [], acrescentar 'prettier'
+em seguida, criar uma chave plugins: com o valor ['prettier]
+depois, acrescentar a seguinte regra em rules: "prettier/prettier": "error",
+para sobreescrerver alguma regra do prettier, é necessário criar um arquivo
+chamado .prettierrc (o mesmo se trata de um arquivo json)
+dentro do arquivo, adcionar as linhas a seguir:
+{
+  "singleQuote": true,
+  "trailingComma": "es5"
+}
+
+desta forma os "import from" serão estilizados com áspas únicas
+Para aplicar a estilização do eslint em todos os arquivos de forma automática
+basta utilizar o seguinte comando: yarn eslint --fix src --ext .js
+Agora devemos instalar o plugin EditorConfig for VS code
+Feito isso, va na pasta raiz do projeto, clica com o botão direito e escolhe
+generate .editorConfig
+Nesse arquivo podemos encontrar as aplicações a seguir:
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+charset = utf-8
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+Por fim, vamos mudar os valores false para true das ultimas duas linhas
+
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+Dentro de src, criar uma pasta config, ela guardará todas as configurações da aplicação
+dentro de config já podemos criar um arquivo chamado database.js que vai guardar
+as configurações da nossa base de dados.
+Voltando para src vamos criar uma pasta chamada database, e dentro dela outra
+pasta chamada migrations.
+Novamente em src vamos criar uma pasta chamada app
+Essa pasta vai guardar os controllers, onde ficam as regras de negócio, codigos
+ou qualquer lógica da aplicação e mais uma pasta chamada models
+Com essa estrutura montada, agora vamos instalar o sequelize através do comando:
+
+yarn add sequelize e tambem o sequelize-cli -D
+o sequelize-cli vai auxiliar na manipulação das migrations
+a seguir vamos criar um arquivo chamado .sequelizerc
+esse arquivo vai exportar os caminhos dos arquivos e pastas criados até agora
+agora no arquivo de configuração da base de dados (database.js) temos uma
+exportação de um objeto, contendo as credencias do bancod e dados:
+
+dialect: 'postgres'
+
+devido a escolha desse dialeto, precisamos instanar algumas dependências:
+yarn add pg pg-hstore
+
+define: {
+  timestamps: true (permite que exista colunas created_at e updated_at)
+  underscored: true (ao invez do camel case precoProduto, temos preco_produto)
+  underscoredAll: true (esse formato sera usado no nome das colunas)
+}
+
+Para criar uma migration devemos utilizar o comando:
+yarn sequelize migration:create --name=create-users
+
+após criada, nossa migrations terá o seguinte formato:
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable('users', { id: Sequelize.INTEGER });
+  },
+
+  down: (queryInterface, Sequelize) => {
+    return queryInterface.dropTable('users');
+  },
+};
+
+depois de editar a migration recem criada, precisamos rodar ela
+para isso utilizamos o comando
+
+yarn sequelize db:migrate
+
+para desfazer uma migration basta usar o comando yarn sequelize db:migrate:undo
+
+Na parte de autenticação, vamos usar a dependência bcryptjs, a mesma será
+responsável por transformar as senhoas dos usuários em hash
+para adcionar essa dependência ao projeto bastas usar o seguinte comando:
+yarn add bcryptjs
+
+Nota, ao utilizar um campo exempl: Sequelize.VIRTUAL, significa dizer que esse
+campo só vai existir no código, ou seja, não será salvo na base de dados.
+
+Nota, o Sequelize possui comandos muito interessantes como é o caso dos addHooks
+por exemplo o this.addHook('beforeSave', callback()), nesse caso uma ação será
+executada antes que o dado seja salvo na db.
+
+Falando de autenticação JWT
+trata-se de uma forma de se fazer autenticação em serviços restful
+Json
+Web
+Token
+
+Esse token é dividido em 3 partes:
+Header: são informações que definem o tipo de token gerado, e o algorítimo gerado
+Payload: dados adcionais, ex: id, nome, email do usuário;
+Assinatura: essa parte garante que o token não foi alterado.
+
+Nota, cada controller se refere a uma entidade distinta da aplicação, desta forma
+cada controller só pode ter 5 métodos: index, show, store, update, delete.
+
+Agora, para instalar a dependência JWT, vamos executar o seguinte comando:
+yarn add jsonwebtoken
+
+Nota, ao passar um token jwt pelo cabeçalho da requisição, é padrão utilizar a
+palavra bearer, ex: Bearer(espaço)"token". No insomnia basta ir em auth e trocar
+para bearer.
+
+cdn: content delivery network (amazom s3)
+
+
+
+
+
+
